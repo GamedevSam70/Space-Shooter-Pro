@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using JetBrains.Annotations;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net.Mail;
 using UnityEngine;
@@ -13,12 +15,17 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject _Triple_ShotPrefabs;
     [SerializeField]
+    private GameObject _Multi_ShotPrefabs;
+    [SerializeField]
     private float _fireRate = 0.15f;
     private float _nextFire = -1f;
     [SerializeField]
+    private int _ammoCount = 15;
+    [SerializeField]
     private AudioClip _laserSoundClip;
     private AudioSource _audioSource;
-
+    [SerializeField]
+    private float _thrusterSpeed = 10f;
     
     [SerializeField]
     private int _lives = 3;
@@ -27,9 +34,16 @@ public class Player : MonoBehaviour
     private bool _isTripleShotActive = false;
     private bool _isSpeedBoostActive = false;
     private bool _isShieldsActive = false;
+    private bool _isMultiShotActive = false;
 
     [SerializeField]
     private GameObject _shieldVisualizer;
+    [SerializeField]
+    private int _shieldStrength = 0;
+    [SerializeField]
+    private Color[] _shieldColor;
+   
+    private SpriteRenderer _isShieldVisualizerSpriteRenderer;
 
     [SerializeField]
     private GameObject _leftEngine, _rightEngine;
@@ -49,6 +63,7 @@ public class Player : MonoBehaviour
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
         _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         _audioSource = GetComponent<AudioSource>();
+        _isShieldVisualizerSpriteRenderer = GetComponent<SpriteRenderer>();
 
         if (_spawnManager == null)
         {
@@ -80,6 +95,9 @@ public class Player : MonoBehaviour
             FireLaser();
         }
 
+        //press Left Shift to increase the speed
+        //release Left Shift to go back to normal speed
+                              
     }
 
     void CalculateMovement()
@@ -108,23 +126,54 @@ public class Player : MonoBehaviour
         {
             transform.position = new Vector3(10, transform.position.y, 0);
         }
+
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+           transform.Translate(direction * _thrusterSpeed * Time.deltaTime);
+        }
+        else
+        {
+            _speed = 5f;
+        }
     }
 
     void FireLaser()
     {
         _nextFire = Time.time + _fireRate;
 
-        if (_isTripleShotActive == true)
+        if (_isTripleShotActive == true && _ammoCount > 0)
         {
             Instantiate(_Triple_ShotPrefabs, transform.position, Quaternion.identity);
-        }
-        
-        else
-        {
-            Instantiate(_laserPrefabs, transform.position + new Vector3(0, 1.05f, 0), Quaternion.identity);
+            _ammoCount = _ammoCount - 1;
+            UpdatePlayerAmmo(_ammoCount);
         }
 
-        _audioSource.Play();
+        else if(_isMultiShotActive == true && _ammoCount > 0)
+        {
+            Instantiate(_laserPrefabs, transform.position + new Vector3(0, 1.05f, 0), Quaternion.identity);
+            Instantiate(_laserPrefabs, transform.position + new Vector3(0, 1.05f, 0), Quaternion.Euler(0, 0, 45));
+            Instantiate(_laserPrefabs, transform.position + new Vector3(0, 1.05f, 0), Quaternion.Euler(0, 0, 90));
+            Instantiate(_laserPrefabs, transform.position + new Vector3(0, 1.05f, 0), Quaternion.Euler(0, 0, -45));
+            Instantiate(_laserPrefabs, transform.position + new Vector3(0, 1.05f, 0), Quaternion.Euler(0, 0, -90));
+            _ammoCount = _ammoCount - 1;
+            UpdatePlayerAmmo(_ammoCount);
+        }
+        
+        else if (_ammoCount > 0)
+        {
+            Instantiate(_laserPrefabs, transform.position + new Vector3(0, 1.05f, 0), Quaternion.identity);
+            _ammoCount = _ammoCount - 1;
+            UpdatePlayerAmmo(_ammoCount);
+        }
+
+        if (_ammoCount > 0)
+        {
+            _audioSource.Play();
+        }
+        else 
+        {
+            _uiManager.AmmoOut();
+        }
                       
     }
 
@@ -132,11 +181,21 @@ public class Player : MonoBehaviour
     {
         if (_isShieldsActive == true)
         {
-            _isShieldsActive = false;
-            _shieldVisualizer.SetActive(false);
-            return;
+            if (_shieldStrength >= 1)
+            {
+                _shieldStrength = _shieldStrength - 1;
+                UpdateShieldsColor();
+                return;
+            }
+            if (_shieldStrength == 0)
+            {
+                _isShieldsActive = false;
+                _shieldVisualizer.SetActive(false);
+                return;
+            }
+               
         }
-        
+
         _lives = _lives - 1;
 
         if (_lives == 2)
@@ -169,6 +228,18 @@ public class Player : MonoBehaviour
        _isTripleShotActive = false;
     }
 
+    public void MultiShotActive()
+    {
+       _isMultiShotActive = true;
+       StartCoroutine(MultishotPowerDown());
+    }
+
+    IEnumerator MultishotPowerDown()
+    {
+        yield return new WaitForSeconds(5.0f);
+        _isMultiShotActive = false;
+    }
+
     public void SpeedBoostActive()
     {
         _isSpeedBoostActive = true;
@@ -179,7 +250,7 @@ public class Player : MonoBehaviour
     IEnumerator SpeedBoostPowerDownRoutine()
     {
         yield return new WaitForSeconds(5.0f);
-        _speed /= _speedMultiplier;
+        _speed *= _speedMultiplier;
         _isSpeedBoostActive = false;
     }
 
@@ -187,6 +258,16 @@ public class Player : MonoBehaviour
     {
         _isShieldsActive = true;
         _shieldVisualizer.SetActive(true);
+        _shieldStrength = 3;
+        _isShieldVisualizerSpriteRenderer = _shieldVisualizer.GetComponent<SpriteRenderer>();
+    }
+
+    public void UpdateShieldsColor()
+    {
+        if (_shieldStrength > 0)
+        {
+            _isShieldVisualizerSpriteRenderer.color = _shieldColor[_shieldStrength];
+        }
     }
 
     public void AddScore(int points)
@@ -195,5 +276,45 @@ public class Player : MonoBehaviour
         _uiManager.UpdateScore(_score);
     }
 
+    public void AmmoPowerUpActive()
+    {
+        _ammoCount = _ammoCount + 15;
+        UpdatePlayerAmmo(_ammoCount);
+        StopCoroutine(_uiManager.AmmoOutFlickerRoutine());
+    }
+
+    public void UpdatePlayerAmmo(int ammo)
+    {
+        _uiManager.UpdateAmmo(ammo);
+        _uiManager.AmmoReceived();
+    }
+
+    public void HealthPowerUpActive()
+    {
+       if (_lives < 3)
+        {
+            _lives = _lives + 1;
+            _uiManager.UpdateLives(_lives);
+
+            if (_lives >= 2)
+            {
+                _leftEngine.SetActive(false);
+                _rightEngine.SetActive(false);
+            }
+
+            else if (_lives > 1)
+            {
+                _leftEngine.SetActive(false);
+                _rightEngine.SetActive(true);
+            }
+
+            else if (_lives == 1)
+            {
+                _leftEngine.SetActive(true) ;
+            }
+        }
+    }
+
 }
+
        
