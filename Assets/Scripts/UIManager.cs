@@ -16,6 +16,9 @@ public class UIManager : MonoBehaviour
     private Text _ammoLeft;
     [SerializeField]
     private Text _ammoOut;
+    [SerializeField]
+    private Slider _thrusterBar;
+    private float _thrusterPower;
 
     [SerializeField]
     private Text _gameOverText;
@@ -35,7 +38,7 @@ public class UIManager : MonoBehaviour
         _gameOverText.gameObject.SetActive(false);
         _restartText.gameObject.SetActive(false);
         _gameManager = GameObject.Find("Game_Manager").GetComponent<GameManager>();
-
+        
        if (_gameManager == null)
         {
             Debug.LogError("GameManager is NULL");
@@ -110,4 +113,10 @@ public class UIManager : MonoBehaviour
         _ammoIsOut = false; 
     }
 
+    public void ThrusterBar(float thrusterPower)
+    {
+        _thrusterBar.value = thrusterPower;
+    }
+
+    
 }

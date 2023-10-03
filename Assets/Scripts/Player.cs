@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Mail;
+
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -15,8 +16,9 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject _Triple_ShotPrefabs;
     [SerializeField]
-    private GameObject _Multi_ShotPrefabs;
-    [SerializeField]
+    private GameObject _thrusterBar;
+    private GameObject _thrusters;
+    
     private float _fireRate = 0.15f;
     private float _nextFire = -1f;
     [SerializeField]
@@ -25,7 +27,11 @@ public class Player : MonoBehaviour
     private AudioClip _laserSoundClip;
     private AudioSource _audioSource;
     [SerializeField]
-    private float _thrusterSpeed = 10f;
+    private float _thrusterSpeed = 2f;
+    private float _thrusterPower = 10f;
+    private float _thrusterUsage = 1f;
+    
+    private float _thrusterWait = 3.0f;
     
     [SerializeField]
     private int _lives = 3;
@@ -35,6 +41,8 @@ public class Player : MonoBehaviour
     private bool _isSpeedBoostActive = false;
     private bool _isShieldsActive = false;
     private bool _isMultiShotActive = false;
+    [SerializeField]
+    private bool _isThrusterActive = false;
 
     [SerializeField]
     private GameObject _shieldVisualizer;
@@ -64,7 +72,7 @@ public class Player : MonoBehaviour
         _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         _audioSource = GetComponent<AudioSource>();
         _isShieldVisualizerSpriteRenderer = GetComponent<SpriteRenderer>();
-
+        
         if (_spawnManager == null)
         {
             Debug.LogError("Spawn Manager is null");
@@ -83,6 +91,7 @@ public class Player : MonoBehaviour
         {
             _audioSource.clip = _laserSoundClip;
         }
+
     }
 
     // Update is called once per frame
@@ -129,7 +138,9 @@ public class Player : MonoBehaviour
 
         if (Input.GetKey(KeyCode.LeftShift))
         {
-           transform.Translate(direction * _thrusterSpeed * Time.deltaTime);
+            transform.Translate(direction * _speed * _thrusterSpeed * Time.deltaTime);
+            StartCoroutine(ThrusterDeplete());
+            
         }
         else
         {
@@ -243,7 +254,7 @@ public class Player : MonoBehaviour
     public void SpeedBoostActive()
     {
         _isSpeedBoostActive = true;
-        _speed *= _speedMultiplier;
+        _speed *= _thrusterSpeed;
         StartCoroutine(SpeedBoostPowerDownRoutine());
     }
 
@@ -312,6 +323,35 @@ public class Player : MonoBehaviour
             {
                 _leftEngine.SetActive(true) ;
             }
+        }
+    }
+
+    IEnumerator ThrusterDeplete()
+    {
+        _isThrusterActive = true;
+
+        while (Input.GetKey(KeyCode.LeftShift) && _thrusterPower > 0) 
+        {
+            yield return null;
+            _thrusterPower = _thrusterPower - _thrusterUsage * Time.deltaTime;
+            _uiManager.ThrusterBar(_thrusterPower);
+        }
+    }
+
+    IEnumerator ThrusterReplen()
+    {
+        _isThrusterActive = false;
+
+        if (_thrusterPower < 10 && _isThrusterActive == false)
+        {
+            yield return new WaitForSeconds(_thrusterWait);
+        }
+
+        while (_thrusterPower < 10 && _isThrusterActive == false)
+        {
+            yield return null;
+            _thrusterPower = _thrusterPower + _thrusterUsage * Time.deltaTime;
+            _uiManager.ThrusterBar(_thrusterPower);
         }
     }
 
