@@ -462,9 +462,9 @@ MonoBehaviour:
   m_HandleRect: {fileID: 0}
   m_Direction: 0
   m_MinValue: 0
-  m_MaxValue: 10
-  m_WholeNumbers: 1
-  m_Value: 10
+  m_MaxValue: 100
+  m_WholeNumbers: 0
+  m_Value: 100
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -1652,10 +1652,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _scoreText: {fileID: 69421909}
-  _livesImg: {fileID: 0}
-  _livesSprites: []
+  _livesImg: {fileID: 958088485}
+  _livesSprites:
+  - {fileID: 21300000, guid: ba53e111f0125654cabfd4eefaf3a657, type: 3}
+  - {fileID: 21300000, guid: 80fba5ece7697c44eacc036539c1b552, type: 3}
+  - {fileID: 21300000, guid: 482c8e4c0346b704aa5f1760c3c989d5, type: 3}
+  - {fileID: 21300000, guid: 9fe6f40efddf0b64fb68a3382b14a4db, type: 3}
   _ammoLeft: {fileID: 1253129365}
-  _ammoOut: {fileID: 0}
+  _ammoOut: {fileID: 1919664243}
   _thrusterBar: {fileID: 398823723}
   _gameOverText: {fileID: 1379270457}
   _restartText: {fileID: 2022410556}
@@ -1786,7 +1790,6 @@ GameObject:
   - component: {fileID: 1907442974}
   - component: {fileID: 1907442973}
   - component: {fileID: 1907442972}
-  - component: {fileID: 1907442971}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1794,30 +1797,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1907442971
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1907442970}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef40d32fdb7d1694d9917bf620f4e9a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _scoreText: {fileID: 69421909}
-  _livesImg: {fileID: 958088485}
-  _livesSprites:
-  - {fileID: 21300000, guid: ba53e111f0125654cabfd4eefaf3a657, type: 3}
-  - {fileID: 21300000, guid: 80fba5ece7697c44eacc036539c1b552, type: 3}
-  - {fileID: 21300000, guid: 482c8e4c0346b704aa5f1760c3c989d5, type: 3}
-  - {fileID: 21300000, guid: 9fe6f40efddf0b64fb68a3382b14a4db, type: 3}
-  _ammoLeft: {fileID: 1253129365}
-  _ammoOut: {fileID: 1919664243}
-  _thrusterBar: {fileID: 0}
-  _gameOverText: {fileID: 1379270457}
-  _restartText: {fileID: 2022410556}
 --- !u!114 &1907442972
 MonoBehaviour:
   m_ObjectHideFlags: 0

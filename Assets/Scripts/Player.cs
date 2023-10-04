@@ -17,7 +17,7 @@ public class Player : MonoBehaviour
     private GameObject _Triple_ShotPrefabs;
     [SerializeField]
     private GameObject _thrusterBar;
-    private GameObject _thrusters;
+    
     
     private float _fireRate = 0.15f;
     private float _nextFire = -1f;
@@ -28,7 +28,7 @@ public class Player : MonoBehaviour
     private AudioSource _audioSource;
     [SerializeField]
     private float _thrusterSpeed = 2f;
-    private float _thrusterPower = 10f;
+    private float _thrusterPower = 100f;
     private float _thrusterUsage = 1f;
     
     private float _thrusterWait = 3.0f;
@@ -38,10 +38,9 @@ public class Player : MonoBehaviour
     private SpawnManager _spawnManager;
 
     private bool _isTripleShotActive = false;
-    private bool _isSpeedBoostActive = false;
     private bool _isShieldsActive = false;
+    private bool _isSpeedBoostActive = false;
     private bool _isMultiShotActive = false;
-    [SerializeField]
     private bool _isThrusterActive = false;
 
     [SerializeField]
@@ -62,6 +61,8 @@ public class Player : MonoBehaviour
 
     [SerializeField]
     private UIManager _uiManager;
+    [SerializeField]
+    private Main_Camera _mainCamera;
 
     // Start is called before the first frame update
     void Start()
@@ -69,9 +70,10 @@ public class Player : MonoBehaviour
         // take current position = new position (0, 0, 0)
         transform.position = new Vector3(0, 0, 0);
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
-        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+        _uiManager = GameObject.Find("UI_Manager").GetComponent<UIManager>();
         _audioSource = GetComponent<AudioSource>();
         _isShieldVisualizerSpriteRenderer = GetComponent<SpriteRenderer>();
+        _mainCamera = GameObject.Find("Main Camera").GetComponent<Main_Camera>();  
         
         if (_spawnManager == null)
         {
@@ -90,6 +92,11 @@ public class Player : MonoBehaviour
         else
         {
             _audioSource.clip = _laserSoundClip;
+        }
+
+        if (_mainCamera == null)
+        {
+            Debug.LogError("Main Camera is NULL");
         }
 
     }
@@ -144,7 +151,8 @@ public class Player : MonoBehaviour
         }
         else
         {
-            _speed = 5f;
+            transform.Translate(direction * _speed * Time.deltaTime);
+            StartCoroutine(ThrusterReplen());
         }
     }
 
@@ -196,6 +204,7 @@ public class Player : MonoBehaviour
             {
                 _shieldStrength = _shieldStrength - 1;
                 UpdateShieldsColor();
+                _mainCamera.CameraShake();
                 return;
             }
             if (_shieldStrength == 0)
@@ -208,6 +217,7 @@ public class Player : MonoBehaviour
         }
 
         _lives = _lives - 1;
+        _mainCamera.CameraShake();
 
         if (_lives == 2)
         {
@@ -342,12 +352,12 @@ public class Player : MonoBehaviour
     {
         _isThrusterActive = false;
 
-        if (_thrusterPower < 10 && _isThrusterActive == false)
+        if (_thrusterPower < 100 && _isThrusterActive == false)
         {
             yield return new WaitForSeconds(_thrusterWait);
         }
 
-        while (_thrusterPower < 10 && _isThrusterActive == false)
+        while (_thrusterPower < 100 && _isThrusterActive == false)
         {
             yield return null;
             _thrusterPower = _thrusterPower + _thrusterUsage * Time.deltaTime;

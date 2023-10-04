@@ -18,8 +18,7 @@ public class UIManager : MonoBehaviour
     private Text _ammoOut;
     [SerializeField]
     private Slider _thrusterBar;
-    private float _thrusterPower;
-
+ 
     [SerializeField]
     private Text _gameOverText;
 
